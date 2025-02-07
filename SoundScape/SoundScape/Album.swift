@@ -8,30 +8,33 @@
 import Foundation
 import SwiftUI
 
-// 앨범 응답 구조체
-struct AlbumSearchResponse: Codable {
-  let albums: AlbumList
+struct SpotifySearchResponse: Codable {
+    let albums: AlbumList
 }
 
-// 앨범 리스트 구조체
 struct AlbumList: Codable {
-  let items: [Album]
+    let items: [Album]
 }
 
-// 앨범 정보 구조체
 struct Album: Codable, Identifiable {
-  let id: String
-  let name: String
-  let artists: [Artist]
-  let images: [Image]
+    let id: String
+    let name: String
+    let images: [SpotifyImage]
+    let artists: [Artist]
+
+    var firstImageURL: String {
+        images.first?.url ?? "https://via.placeholder.com/300" // 기본 이미지 URL 설정
+    }
+
+    var artistNames: String {
+        artists.map { $0.name }.joined(separator: ", ")
+    }
 }
 
-// 아티스트 정보 구조체
+struct SpotifyImage: Codable {
+    let url: String
+}
+
 struct Artist: Codable {
-  let name: String
-}
-
-// 이미지 정보 구조체
-struct Image: Codable {
-  let url: String
+    let name: String
 }
