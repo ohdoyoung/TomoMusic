@@ -76,4 +76,28 @@ public class SpotifyController {
 
         return response.getBody();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<String> searchAlbums(@RequestParam String query) {
+        // Step 1: Access Token 가져오기
+        String accessToken = getAccessToken();
+
+        // Step 2: Spotify API에서 앨범 검색
+        String searchResults = fetchAlbumsByQuery(query, accessToken);
+        return ResponseEntity.ok(searchResults);
+    }
+
+    // Step 2: Spotify API에서 앨범 검색
+    private String fetchAlbumsByQuery(String query, String accessToken) {
+        String url = API_BASE_URL + "search?q=" + query + "&type=album&limit=10";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return response.getBody();
+    }
 }
