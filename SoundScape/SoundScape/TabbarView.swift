@@ -14,21 +14,26 @@ struct TabbarView: View {
     @State private var selected: Tab = .a  // 선택된 Tab을 컨트롤할 수 있는 상태 변수
     
     var body: some View {
-        TabView(selection: $selected) {
-            Group {
-                NavigationStack {
-                    AlbumSearchView()
-                }
-                .tag(Tab.a)
+        VStack {
+            // TabView 부분
+            TabView(selection: $selected) {
+                Group {
+                    NavigationStack {
+                        AlbumSearchView() // 앨범 검색 뷰
+                    }
+                    .tag(Tab.a)
                 
-                NavigationStack {
-                    CalendarView()
+                    NavigationStack {
+                        CalendarView() // 달력 뷰
+                    }
+                    .tag(Tab.b)
                 }
-                .tag(Tab.b)
+                .toolbar(.hidden, for: .tabBar)
             }
-            .toolbar(.hidden, for: .tabBar)
+
+            // 커스텀 탭바
+            tabBar
         }
-        tabBar
     }
     
     var tabBar: some View {
@@ -49,6 +54,7 @@ struct TabbarView: View {
             .foregroundStyle(selected == .a ? Color.accentColor : Color.primary)
             
             Spacer()
+            
             Button {
                 selected = .b
             } label: {
@@ -73,8 +79,4 @@ struct TabbarView: View {
         }
         .padding(.horizontal)
     }
-}
-
-#Preview {
-    TabbarView()
 }

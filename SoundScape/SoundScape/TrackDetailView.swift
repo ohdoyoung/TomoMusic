@@ -7,15 +7,20 @@ struct TrackDetailView: View {
         VStack {
             AsyncImage(url: URL(string: track.imageUrl)) { image in
                 image.resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .cornerRadius(12)
+                    .shadow(radius:5)
             } placeholder: {
                 Color.gray
             }
-            .frame(width: 200, height: 200)
-            .cornerRadius(12)
+            .padding()
+
 
             Text(track.name)
-                .font(.title)
+                .font(.title2)
                 .bold()
+                .padding(.top,5)
 
             Text(track.artistName)
                 .font(.headline)
@@ -26,6 +31,8 @@ struct TrackDetailView: View {
                 .foregroundColor(.gray)
 
             Spacer()
+            
+            DiaryView()
         }
         .padding()
         .navigationTitle("노래 정보")

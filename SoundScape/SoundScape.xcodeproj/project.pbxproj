@@ -6,12 +6,7 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		132355C02D59973200362C4E /* TrackDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132355BF2D59973200362C4E /* TrackDetailView.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		132355BF2D59973200362C4E /* TrackDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackDetailView.swift; sourceTree = "<group>"; };
 		13537E082D44DA290080813B /* SoundScape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SoundScape.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -37,7 +32,6 @@
 		13537DFF2D44DA290080813B = {
 			isa = PBXGroup;
 			children = (
-				132355BF2D59973200362C4E /* TrackDetailView.swift */,
 				13537E0A2D44DA290080813B /* SoundScape */,
 				13537E092D44DA290080813B /* Products */,
 			);
@@ -125,7 +119,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				132355C02D59973200362C4E /* TrackDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
