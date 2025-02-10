@@ -1,24 +1,25 @@
 import SwiftUI
 
 class AlbumSearchViewModel: ObservableObject {
-    @Published var albums: [Album] = []   // ✅ Album 직접 사용
-    @Published var isLoading: Bool = false  // ✅ 로딩 상태 추가
-    @Published var errorMessage: String? = nil  // ✅ 에러 메시지 추가
+    @Published var albums: [Album] = []
+    @Published var tracks: [MusicTrack] = []  // ✅ 노래(트랙) 데이터 추가
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String? = nil
 
-    func searchAlbums(query: String) {
+    func search(query: String) {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "http://localhost:8085/spotify/search?query=\(encodedQuery)") else {
+              let url = URL(string: "http://localhost:8085/spotify/search?query=\(encodedQuery)&type=album,track") else {
             DispatchQueue.main.async {
                 self.errorMessage = "잘못된 검색어입니다."
             }
             return
         }
 
-        isLoading = true  // ✅ API 요청 시작할 때 로딩 상태 변경
+        isLoading = true
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {
-                self.isLoading = false  // ✅ 응답이 오면 로딩 상태 해제
+                self.isLoading = false
             }
 
             if let error = error {
@@ -39,7 +40,8 @@ class AlbumSearchViewModel: ObservableObject {
                 let decodedResponse = try JSONDecoder().decode(SpotifySearchResponse.self, from: data)
                 DispatchQueue.main.async {
                     self.albums = decodedResponse.albums.items
-                    self.errorMessage = nil  // ✅ 성공 시 에러 메시지 초기화
+                    self.tracks = decodedResponse.tracks.items  // ✅ 트랙 데이터 저장
+                    self.errorMessage = nil
                 }
             } catch {
                 DispatchQueue.main.async {
