@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct SoundScapeApp: App {
+    @StateObject private var userInfo = UserInfo()  // UserInfo 객체 초기화
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LoginView()
+            .environmentObject(userInfo)
         }
     }
 }

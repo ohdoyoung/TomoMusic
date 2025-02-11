@@ -4,10 +4,9 @@ struct AlbumDetailView: View {
     let album: Album
     @State private var albumDetails: AlbumDetails?
     @State private var showTracks = false // 트랙 목록을 표시할지 여부
-    
+    @State private var albumName = "" // 여기서 이름을 관리
     
     var body: some View {
-        
         VStack {
             // 앨범 썸네일 이미지
             AsyncImage(url: URL(string: album.firstImageURL)) { image in
@@ -22,7 +21,6 @@ struct AlbumDetailView: View {
             .padding()
             
             // 앨범 이름 표시
-            
             if let details = albumDetails {
                 Text(details.name)
                     .font(.title2)
@@ -72,13 +70,13 @@ struct AlbumDetailView: View {
             
             Spacer()
             
-            
-            DiaryView()
+            // `album.name`을 `@Binding`으로 전달
+            DiaryView(name: $albumName)
                 .padding()
         }
-        
         .onAppear {
             fetchAlbumDetails(for: album.id) // 앨범 ID로 디테일 정보 가져오기
+            albumName = album.name // `album.name`을 `albumName`에 저장
         }
         .navigationBarTitle("앨범 상세", displayMode: .inline)
     }

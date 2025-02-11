@@ -1,17 +1,14 @@
-//
-//  TabbarView.swift
-//  SoundScape
-//
-//  Created by 오도영 on 2/9/25.
-//
-
+// TabbarView.swift
 import SwiftUI
 
 struct TabbarView: View {
     enum Tab {  // Tag에서 사용할 Tab 열겨형
         case a, b, c
     }
+    
     @State private var selected: Tab = .a  // 선택된 Tab을 컨트롤할 수 있는 상태 변수
+    @State private var selectedDate: Date = Date()  // 캘린더에 전달할 날짜 상태 변수
+    @State private var diaryEntries: [MusicDiaryEntry] = []  // diaryEntries를 관리
     
     var body: some View {
         VStack {
@@ -24,9 +21,14 @@ struct TabbarView: View {
                     .tag(Tab.a)
                 
                     NavigationStack {
-                        CalendarView() // 달력 뷰
+                        CalendarView(selectedDate: $selectedDate)  // @Binding을 사용하여 자식 뷰에 전달
                     }
                     .tag(Tab.b)
+                    
+                    NavigationStack {
+                        MyPageView()  // 다른 탭 뷰
+                    }
+                    .tag(Tab.c)
                 }
                 .toolbar(.hidden, for: .tabBar)
             }
@@ -48,7 +50,6 @@ struct TabbarView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 22)
-                    if selected == .a { Text("검색").font(.system(size: 11)) }
                 }
             }
             .foregroundStyle(selected == .a ? Color.accentColor : Color.primary)
@@ -63,10 +64,23 @@ struct TabbarView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 22)
-                    if selected == .b { Text("달력").font(.system(size: 11)) }
                 }
             }
             .foregroundStyle(selected == .b ? Color.accentColor : Color.primary)
+            
+            Spacer()
+            
+            Button {
+                selected = .c
+            } label: {
+                VStack(alignment: .center) {
+                    Image(systemName: "house.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22)
+                }
+            }
+            .foregroundStyle(selected == .c ? Color.accentColor : Color.primary)
             
             Spacer()
         }
