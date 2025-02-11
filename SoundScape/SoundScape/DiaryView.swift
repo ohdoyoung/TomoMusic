@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct DiaryView: View {
-//    @EnvironmentObject var userInfo: UserInfo  // 로그인된 사용자 정보
-    @Binding var name: String
+    //    @Binding var name: String?
     @State private var musicCalText = "" // 일기 내용
     @State private var selectedEmotions: Set<String> = ["🙂"] // 선택된 감정들 (기본적으로 🙂 선택)
     @State private var diaryBackground: Color = Color.blue.opacity(0.1) // 일기 배경 색상
-
+    
     let maxVisibleRows = 5 // 최대 표시할 줄 수
     let emotions = ["🙂", "😊", "😎", "😢", "😜", "🥳", "🤩", "😇", "🤔", "🤯",
                     "😈", "😱", "😷", "😳", "🥺", "😴", "💪", "❤️", "🔥", "😂",
                     "😭", "🥶", "🤪", "😡", "💀"]
-
+    @Binding var albumId: String?  // 앨범 ID
+    @Binding var trackId: String?
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -26,14 +27,14 @@ struct DiaryView: View {
                 }
                 .frame(height: CGFloat(maxVisibleRows) * 18) // 1줄당 18 높이 적용
                 .clipped()
-
+                
                 // 일기 입력창
                 ZStack {
                     RoundedRectangle(cornerRadius: 15)
                         .fill(diaryBackground)
                         .frame(height: 250)
                         .shadow(radius: 10)
-
+                    
                     VStack {
                         TextEditor(text: $musicCalText)
                             .padding()
@@ -49,19 +50,19 @@ struct DiaryView: View {
                     }
                     .padding(.horizontal)
                 }
-
+                
                 // 일기 저장 버튼
                 Button(action: {
                     // 오늘 날짜
                     let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                     let todayString = dateFormatter.string(from: Date()) // 오늘 날짜를 문자열로 변환
                     
                     // 로그인된 사용자 아이디를 이용하여 바로 전송
                     let userId = UserInfo.shared.loginId // String 타입으로 바로 사용
-
+                    
                     let emotionsJson = Array(selectedEmotions) // 감정들을 JSON 형식으로 변환
-                    saveDiary(userId: userId, content: musicCalText, emotions: emotionsJson, date: todayString)
+                    saveDiary(userId: userId, content: musicCalText, emotions: emotionsJson, date: todayString, trackId: trackId, albumId: albumId)
                 }) {
                     Text("Scape")
                         .font(.headline)
@@ -75,7 +76,7 @@ struct DiaryView: View {
         }
         .padding()
     }
-
+    
     // 감정 아이콘 버튼
     func EmotionButton(emotion: String, selectedEmotions: Binding<Set<String>>) -> some View {
         Button(action: {
@@ -93,41 +94,56 @@ struct DiaryView: View {
                 .foregroundColor(.primary)
         }
     }
-
-    // 일기 저장 API 호출
-    func saveDiary(userId: String, content: String, emotions: [String], date: String) {
-        // 서버로 일기 저장 요청 (예시)
+    
+    func saveDiary(userId: String, content: String, emotions: [String], date: String, trackId: String?, albumId: String?) {
         let url = URL(string: "http://localhost:8085/api/saveDiary")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        // 보낼 데이터 (로그인 아이디, 일기 내용, 감정, 날짜)
-        let requestBody: [String: Any] = [
+        
+        var requestBody: [String: Any] = [
             "loginId": userId,
-            "diaryContent": content,
-            "emotions": emotions, // 감정을 배열로 보내기
-            "date": date
+            "content": content,
+            "emotions": emotions, // 배열로 감정을 보냄
+            "createdAt": date,
+            "updatedAt": date
         ]
-
+        
+        // 트랙 아이디 또는 앨범 아이디가 존재하면 추가
+//        if let trackId = trackId {
+//            requestBody["trackId"] = trackId
+//        }
+//        if let albumId = albumId {
+//            requestBody["albumId"] = albumId
+//        }
+//        
+        var jsonData: Data? = nil
         do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+            jsonData = try JSONSerialization.data(withJSONObject: requestBody, options: [])
         } catch {
             print("일기 저장 실패: \(error.localizedDescription)")
             return
         }
-
+        
+        request.httpBody = jsonData
+        
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("네트워크 오류: \(error.localizedDescription)")
                 return
             }
-
-            // 응답 처리
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                print("일기 저장 성공")
-            } else {
-                print("일기 저장 실패")
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    print("일기 저장 성공")
+                } else {
+                    if let data = data,
+                       let responseString = String(data: data, encoding: .utf8) {
+                        print("일기 저장 실패: \(httpResponse.statusCode), 응답: \(responseString)")
+                    } else {
+                        print("일기 저장 실패: 상태 코드 \(httpResponse.statusCode)")
+                    }
+                }
             }
         }
         task.resume()

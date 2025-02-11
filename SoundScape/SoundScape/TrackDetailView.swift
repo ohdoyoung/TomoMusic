@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TrackDetailView: View {
     let track: MusicTrack
+    @State private var trackId: String?
     @State private var TrackName=""
     
     var body: some View {
@@ -33,8 +34,9 @@ struct TrackDetailView: View {
             
             Spacer()
             
-            DiaryView(name: $TrackName)
+            DiaryView(albumId: .constant(nil), trackId: $trackId)
                 .onAppear {
+                    trackId = track.id
                     TrackName = track.name // `album.name`을 `albumName`에 저장
                 }
         }

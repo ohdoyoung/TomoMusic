@@ -21,7 +21,7 @@ struct TabbarView: View {
                     .tag(Tab.a)
                 
                     NavigationStack {
-                        CalendarView(selectedDate: $selectedDate)  // @Binding을 사용하여 자식 뷰에 전달
+                        CalendarView()  // @Binding을 사용하여 자식 뷰에 전달
                     }
                     .tag(Tab.b)
                     

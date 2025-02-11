@@ -1,14 +1,21 @@
 package com.tomomusic.webapi.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Data
@@ -20,14 +27,15 @@ public class Diary {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String loginId; // 사용자 아이디
-    private String content; // 일기 내용
-    private LocalDate date; // 작성 날짜
+    private String content;
 
-    public Diary(String loginId, String content, LocalDate date) {
-        this.loginId = loginId;
-        this.content = content;
-        this.date = date;
-    }
+    private List<String> emotions;
 
+    private String loginId;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

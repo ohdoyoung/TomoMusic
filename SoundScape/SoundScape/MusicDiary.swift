@@ -11,8 +11,13 @@ struct MusicDiaryEntry: Codable,Identifiable {
     var id: UUID
     var userId: String  // 로그인한 사용자 ID
     var name: String
-    var date: String
+    //    var date: String
     var text: String
     var emotions: [String]
+    var albumId: String  // 앨범 아이디
+    var trackId: String  // 트랙 아이디
+    var createdAt: String
+    var updatedAt: String
+    
 }
 

@@ -4,7 +4,7 @@ struct AlbumDetailView: View {
     let album: Album
     @State private var albumDetails: AlbumDetails?
     @State private var showTracks = false // 트랙 목록을 표시할지 여부
-    @State private var albumName = "" // 여기서 이름을 관리
+    @State private var albumId: String? // 앨범 ID를 옵셔널로 관리
     
     var body: some View {
         VStack {
@@ -70,29 +70,15 @@ struct AlbumDetailView: View {
             
             Spacer()
             
-            // `album.name`을 `@Binding`으로 전달
-            DiaryView(name: $albumName)
+            // `albumId`를 `@Binding`으로 전달
+            DiaryView(albumId: $albumId, trackId: .constant(nil)) // 앨범 ID를 바인딩으로 전달
                 .padding()
         }
         .onAppear {
             fetchAlbumDetails(for: album.id) // 앨범 ID로 디테일 정보 가져오기
-            albumName = album.name // `album.name`을 `albumName`에 저장
+            albumId = album.id // `album.id`를 `albumId`에 저장
         }
         .navigationBarTitle("앨범 상세", displayMode: .inline)
-    }
-    
-    // 감정 아이콘 버튼
-    func EmotionButton(emotion: String, selectedEmotion: Binding<String>) -> some View {
-        Button(action: {
-            selectedEmotion.wrappedValue = emotion
-        }) {
-            Text(emotion)
-                .font(.title)
-                .padding(8)
-                .background(selectedEmotion.wrappedValue == emotion ? Color.accentColor : Color.gray.opacity(0.2))
-                .cornerRadius(12)
-                .foregroundColor(.primary)
-        }
     }
     
     // 앨범 상세 정보를 가져오는 함수
