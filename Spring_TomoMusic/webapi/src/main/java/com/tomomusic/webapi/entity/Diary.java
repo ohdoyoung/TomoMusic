@@ -33,6 +33,12 @@ public class Diary {
 
     private String loginId;
 
+    @Column(name = "albumid", nullable = true)
+    private String albumId;
+
+    @Column(name = "trackid", nullable = true)
+    private String trackId;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 

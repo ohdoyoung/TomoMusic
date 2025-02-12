@@ -104,19 +104,26 @@ struct DiaryView: View {
         var requestBody: [String: Any] = [
             "loginId": userId,
             "content": content,
-            "emotions": emotions, // 배열로 감정을 보냄
+            "emotions": emotions, // 감정 배열
             "createdAt": date,
             "updatedAt": date
         ]
         
         // 트랙 아이디 또는 앨범 아이디가 존재하면 추가
-//        if let trackId = trackId {
-//            requestBody["trackId"] = trackId
-//        }
-//        if let albumId = albumId {
-//            requestBody["albumId"] = albumId
-//        }
-//        
+        if let trackId = trackId {
+            requestBody["trackId"] = trackId
+            print("트랙 아이디: \(trackId)") // 디버깅 로그 추가
+        } else {
+            print("트랙 아이디가 없음") // 디버깅 로그 추가
+        }
+        
+        if let albumId = albumId {
+            requestBody["albumId"] = albumId
+            print("앨범 아이디: \(albumId)") // 디버깅 로그 추가
+        } else {
+            print("앨범 아이디가 없음") // 디버깅 로그 추가
+        }
+        
         var jsonData: Data? = nil
         do {
             jsonData = try JSONSerialization.data(withJSONObject: requestBody, options: [])

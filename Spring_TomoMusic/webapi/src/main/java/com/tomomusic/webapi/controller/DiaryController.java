@@ -40,16 +40,17 @@ public class DiaryController {
 
     // 특정 날짜에 대한 일기 조회 (사용자 아이디 + 날짜)
     @GetMapping("/entry")
-    public ResponseEntity<Diary> getDiaryEntry(@RequestParam String userId, @RequestParam String date) {
+    public ResponseEntity<Diary> getDiaryEntry(@RequestParam String loginId, @RequestParam String date) {
         LocalDate entryDate = LocalDate.parse(date); // "YYYY-MM-DD" 형식의 문자열을 LocalDate로 변환
-        Diary diary = diaryService.getDiaryByUserAndDate(userId, entryDate); // 해당 일기 조회
+        Diary diary = diaryService.getDiaryByUserAndDate(loginId, entryDate); // 해당 일기 조회
+        System.out.println(diary);
         return ResponseEntity.ok(diary); // 조회된 일기 반환
     }
 
     // 사용자가 작성한 모든 일기 조회 (앨범/트랙 정보 포함)
     @GetMapping("/entries")
-    public ResponseEntity<List<Diary>> getAllDiaryEntries(@RequestParam String userId) {
-        List<Diary> diaries = diaryService.getAllDiariesByUser(userId); // 사용자에 해당하는 모든 일기 조회
+    public ResponseEntity<List<Diary>> getAllDiaryEntries(@RequestParam String loginId) {
+        List<Diary> diaries = diaryService.getAllDiariesByUser(loginId); // 사용자에 해당하는 모든 일기 조회
         return ResponseEntity.ok(diaries); // 조회된 모든 일기 반환
     }
 }
