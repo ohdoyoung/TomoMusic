@@ -6,7 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -159,6 +162,124 @@ public class SpotifyController {
             return result;
         } catch (Exception e) {
             throw new RuntimeException("Error parsing album details response", e);
+        }
+    }
+
+    @GetMapping("/track/{id}")
+    public ResponseEntity<Map<String, Object>> getAlbumByTrackId(@PathVariable String id) {
+        // Step 1: Access Token 가져오기
+        String accessToken = getAccessToken();
+
+        // Step 2: 트랙 정보를 가져와서 포함된 앨범 정보 추출
+        return ResponseEntity.ok(fetchAlbumFromTrack(id, accessToken));
+    }
+
+    // ✅ 트랙 ID를 이용하여 해당 앨범 정보를 가져오는 메서드
+    private Map<String, Object> fetchAlbumFromTrack(String trackId, String accessToken) {
+        String url = API_BASE_URL + "tracks/" + trackId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return parseTrackResponse(response.getBody());
+    }
+
+    // ✅ 트랙 응답에서 앨범 정보를 추출하는 메서드
+    private Map<String, Object> parseTrackResponse(String responseBody) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonResponse = objectMapper.readTree(responseBody);
+
+            // 트랙 응답에서 앨범 정보 추출
+            JsonNode albumNode = jsonResponse.get("album");
+
+            Map<String, Object> albumInfo = new HashMap<>();
+            albumInfo.put("id", albumNode.get("id").asText());
+            albumInfo.put("name", albumNode.get("name").asText());
+            albumInfo.put("release_date", albumNode.get("release_date").asText());
+            albumInfo.put("images", albumNode.get("images"));
+            albumInfo.put("artists", albumNode.get("artists"));
+
+            return albumInfo;
+        } catch (Exception e) {
+            throw new RuntimeException("Error parsing track response", e);
+        }
+    }
+
+    @GetMapping("/album/{id}/detail")
+    public ResponseEntity<Map<String, Object>> getDetailedAlbumInfo(@PathVariable String id) {
+        // Step 1: Access Token 가져오기
+        String accessToken = getAccessToken();
+
+        // Step 2: 새로운 방식으로 앨범 상세 정보 가져오기
+        Map<String, Object> albumDetails = fetchDetailedAlbumInfo(id, accessToken);
+
+        return ResponseEntity.ok(albumDetails);
+    }
+
+    private Map<String, Object> fetchDetailedAlbumInfo(String id, String accessToken) {
+        String url = API_BASE_URL + "albums/" + id;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return parseDetailedAlbumResponse(response.getBody());
+    }
+
+    private Map<String, Object> parseDetailedAlbumResponse(String responseBody) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonResponse = objectMapper.readTree(responseBody);
+
+            Map<String, Object> albumInfo = new HashMap<>();
+
+            // 기본 앨범 정보
+            albumInfo.put("id", jsonResponse.get("id").asText());
+            albumInfo.put("name", jsonResponse.get("name").asText());
+            albumInfo.put("release_date", jsonResponse.get("release_date").asText());
+
+            // ✅ 첫 번째 이미지 URL만 저장
+            JsonNode imagesNode = jsonResponse.get("images");
+            if (imagesNode != null && imagesNode.isArray() && imagesNode.size() > 0) {
+                albumInfo.put("image_url", imagesNode.get(0).get("url").asText());
+            } else {
+                albumInfo.put("image_url", null);
+            }
+
+            // ✅ 아티스트 정보 저장 (이름 리스트로 변환)
+            JsonNode artistsNode = jsonResponse.get("artists");
+            List<String> artistNames = new ArrayList<>();
+            if (artistsNode != null && artistsNode.isArray()) {
+                for (JsonNode artist : artistsNode) {
+                    artistNames.add(artist.get("name").asText());
+                }
+            }
+            albumInfo.put("artists", artistNames);
+
+            // ✅ 트랙 정보 정리
+            JsonNode tracksNode = jsonResponse.get("tracks").get("items");
+            List<Map<String, Object>> trackList = new ArrayList<>();
+            if (tracksNode != null && tracksNode.isArray()) {
+                for (JsonNode track : tracksNode) {
+                    Map<String, Object> trackInfo = new HashMap<>();
+                    trackInfo.put("id", track.get("id").asText());
+                    trackInfo.put("name", track.get("name").asText());
+                    trackList.add(trackInfo);
+                }
+            }
+            albumInfo.put("tracks", trackList);
+
+            return albumInfo;
+        } catch (Exception e) {
+            throw new RuntimeException("Error parsing detailed album response", e);
         }
     }
 }

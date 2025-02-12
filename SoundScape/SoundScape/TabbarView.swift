@@ -6,7 +6,7 @@ struct TabbarView: View {
         case a, b, c
     }
     
-    @State private var selected: Tab = .a  // 선택된 Tab을 컨트롤할 수 있는 상태 변수
+    @State private var selected: Tab = .c  // 선택된 Tab을 컨트롤할 수 있는 상태 변수
     @State private var selectedDate: Date = Date()  // 캘린더에 전달할 날짜 상태 변수
     @State private var diaryEntries: [MusicDiaryEntry] = []  // diaryEntries를 관리
     
