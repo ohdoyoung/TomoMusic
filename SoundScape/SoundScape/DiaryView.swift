@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct DiaryView: View {
-    //    @Binding var name: String?
     @State private var musicCalText = "" // 일기 내용
-    @State private var selectedEmotions: Set<String> = ["🙂"] // 선택된 감정들 (기본적으로 🙂 선택)
+    @State private var selectedEmotions: Set<String> = [] // 선택된 감정들 (기본적으로 🙂 선택)
     @State private var diaryBackground: Color = Color.blue.opacity(0.1) // 일기 배경 색상
+    @State private var keyboardVisible = false // 키보드 상태 감지
     
     let maxVisibleRows = 5 // 최대 표시할 줄 수
     let emotions = ["🙂", "😊", "😎", "😢", "😜", "🥳", "🤩", "😇", "🤔", "🤯",
@@ -13,6 +13,8 @@ struct DiaryView: View {
     @Binding var albumId: String?  // 앨범 ID
     @Binding var trackId: String?
     
+    @FocusState private var isTextEditorFocused: Bool // TextEditor 포커스 상태
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -47,22 +49,14 @@ struct DiaryView: View {
                                     .stroke(Color.gray, lineWidth: 1)
                             )
                             .padding(.top, 10)
+                            .focused($isTextEditorFocused) // 포커스 적용
                     }
                     .padding(.horizontal)
                 }
                 
                 // 일기 저장 버튼
                 Button(action: {
-                    // 오늘 날짜
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                    let todayString = dateFormatter.string(from: Date()) // 오늘 날짜를 문자열로 변환
-                    
-                    // 로그인된 사용자 아이디를 이용하여 바로 전송
-                    let userId = UserInfo.shared.loginId // String 타입으로 바로 사용
-                    
-                    let emotionsJson = Array(selectedEmotions) // 감정들을 JSON 형식으로 변환
-                    saveDiary(userId: userId, content: musicCalText, emotions: emotionsJson, date: todayString, trackId: trackId, albumId: albumId)
+                    saveDiary()
                 }) {
                     Text("Scape")
                         .font(.headline)
@@ -73,10 +67,39 @@ struct DiaryView: View {
                         .cornerRadius(12)
                 }
             }
+            .padding()
+            .padding(.bottom, keyboardVisible ? 200 : 0) // 키보드가 올라오면 아래 여백 추가
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
-        .padding()
+        .onAppear {
+            addKeyboardObservers()
+        }
+        .onDisappear {
+            removeKeyboardObservers()
+        }
     }
     
+    // 키보드 상태 감지
+    private func addKeyboardObservers() {
+        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { _ in
+            keyboardVisible = true
+        }
+        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+            keyboardVisible = false
+        }
+    }
+
+    private func removeKeyboardObservers() {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+
+    private func hideKeyboard() {
+        isTextEditorFocused = false
+    }
+
     // 감정 아이콘 버튼
     func EmotionButton(emotion: String, selectedEmotions: Binding<Set<String>>) -> some View {
         Button(action: {
@@ -95,66 +118,7 @@ struct DiaryView: View {
         }
     }
     
-    func saveDiary(userId: String, content: String, emotions: [String], date: String, trackId: String?, albumId: String?) {
-        let url = URL(string: "http://192.168.219.94:8085/api/saveDiary")!
-//          let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/saveDiary")!
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        var requestBody: [String: Any] = [
-            "loginId": userId,
-            "content": content,
-            "emotions": emotions, // 감정 배열
-            "createdAt": date,
-            "updatedAt": date
-        ]
-        
-        // 트랙 아이디 또는 앨범 아이디가 존재하면 추가
-        if let trackId = trackId {
-            requestBody["trackId"] = trackId
-            print("트랙 아이디: \(trackId)") // 디버깅 로그 추가
-        } else {
-            print("트랙 아이디가 없음") // 디버깅 로그 추가
-        }
-        
-        if let albumId = albumId {
-            requestBody["albumId"] = albumId
-            print("앨범 아이디: \(albumId)") // 디버깅 로그 추가
-        } else {
-            print("앨범 아이디가 없음") // 디버깅 로그 추가
-        }
-        
-        var jsonData: Data? = nil
-        do {
-            jsonData = try JSONSerialization.data(withJSONObject: requestBody, options: [])
-        } catch {
-            print("일기 저장 실패: \(error.localizedDescription)")
-            return
-        }
-        
-        request.httpBody = jsonData
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("네트워크 오류: \(error.localizedDescription)")
-                return
-            }
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    print("일기 저장 성공")
-                } else {
-                    if let data = data,
-                       let responseString = String(data: data, encoding: .utf8) {
-                        print("일기 저장 실패: \(httpResponse.statusCode), 응답: \(responseString)")
-                    } else {
-                        print("일기 저장 실패: 상태 코드 \(httpResponse.statusCode)")
-                    }
-                }
-            }
-        }
-        task.resume()
+    private func saveDiary() {
+        print("일기 저장 로직 실행")
     }
 }

@@ -200,7 +200,7 @@ public class SpotifyController {
             Map<String, Object> albumInfo = new HashMap<>();
             albumInfo.put("id", albumNode.get("id").asText());
             albumInfo.put("name", albumNode.get("name").asText());
-            albumInfo.put("release_date", albumNode.get("release_date").asText());
+            // albumInfo.put("release_date", albumNode.get("release_date").asText());
             albumInfo.put("images", albumNode.get("images"));
             albumInfo.put("artists", albumNode.get("artists"));
 
