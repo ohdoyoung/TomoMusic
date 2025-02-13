@@ -4,26 +4,26 @@ class APIService {
     static let shared = APIService()
     private init() {}
     
-    private static let backendURL = "http://192.168.219.94:8085/music-diary" // 백엔드 API URL
-//      private static let backendURL = "https://slim-dari-ohdoyoung-2098d088.koyeb.app/music-diary" // 백엔드 API URL
+//    private static let backendURL = "http://192.168.219.94:8085/music-diary" // 백엔드 API URL
+      private static let backendURL = "https://localhost:8085/music-diary" // 백엔드 API URL
 
     // 앨범 목록을 가져오는 함수
     func fetchAlbums(query: String, completion: @escaping (Result<[Album], Error>) -> Void) {
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "http://192.168.219.94:8085/spotify/search?query=\(encodedQuery)") else {
-            DispatchQueue.main.async {
-                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            }
-            return
-        }
-        
 //        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-//              let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/search?query=\(encodedQuery)") else {
+//              let url = URL(string: "http://192.168.219.94:8085/spotify/search?query=\(encodedQuery)") else {
 //            DispatchQueue.main.async {
 //                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
 //            }
 //            return
 //        }
+        
+        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "http://localhost:8085/spotify/search?query=\(encodedQuery)") else {
+            DispatchQueue.main.async {
+                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+            }
+            return
+        }
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -67,8 +67,8 @@ class APIService {
     
     // 앨범 상세 정보를 가져오는 함수
     static func fetchAlbumDetails(for albumId: String, completion: @escaping (AlbumDetails?) -> Void) {
-        let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)")!
-//        let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/album/\(albumId)")!
+//        let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)")!
+        let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -99,8 +99,8 @@ class APIService {
 
     // **새로운 함수**: 음악 아이디(trackId)로 앨범 정보 가져오기
     static func fetchAlbumDetailsById(for trackId: String, completion: @escaping (AlbumDetails?) -> Void) {
-        let url = URL(string: "http://192.168.219.94:8085/spotify/track/\(trackId)")! // 음악 아이디로 요청 URL 변경
-//          let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/track/\(trackId)")! // 음악 아이디로 요청 URL 변경
+//        let url = URL(string: "http://192.168.219.94:8085/spotify/track/\(trackId)")! // 음악 아이디로 요청 URL 변경
+          let url = URL(string: "https://localhost:8085/spotify/track/\(trackId)")! // 음악 아이디로 요청 URL 변경
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -131,19 +131,19 @@ class APIService {
 
     // 음악 일기와 관련된 앨범 정보를 함께 가져오는 함수
     func fetchDiaryEntries(for userId: String, completion: @escaping (Result<[MusicDiaryEntry], Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.219.94:8085/api/entries?loginId=\(userId)") else {
-            DispatchQueue.main.async {
-                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            }
-            return
-        }
-//        
-//        guard let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/entries?loginId=\(userId)") else {
+//        guard let url = URL(string: "http://192.168.219.94:8085/api/entries?loginId=\(userId)") else {
 //            DispatchQueue.main.async {
 //                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
 //            }
 //            return
 //        }
+        
+        guard let url = URL(string: "https://localhost:8085/api/entries?loginId=\(userId)") else {
+            DispatchQueue.main.async {
+                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+            }
+            return
+        }
 //        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

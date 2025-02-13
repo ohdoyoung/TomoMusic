@@ -1,6 +1,6 @@
 import Foundation
 
-struct TrackInfo: Decodable {
+struct TrackInfo: Decodable,Identifiable {
     var id: String
     var name: String
     var imageUrl: String?  // 첫 번째 이미지 URL을 담을 변수

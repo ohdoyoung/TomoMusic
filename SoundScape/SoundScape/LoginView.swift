@@ -71,7 +71,7 @@ struct LoginView: View {
     func login() {
         // 로그인 요청 보내기
 //        let url = URL(string: "http://192.168.219.94:8085/api/login")!
-          let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/login")!
+          let url = URL(string: "http://localhost:8085/api/login")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

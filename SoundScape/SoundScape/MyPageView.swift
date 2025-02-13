@@ -11,7 +11,7 @@ struct MyPageView: View {
     @State private var isEditingTitle: [String: Bool] = [:]
     @State private var isHidden: Bool = false // 이미지 숨기기 상태
     @State private var hiddenMonths: [String: Bool] = [:] // 월별 숨김 여부 관리
-
+    
     
     let userId = UserInfo.shared.loginId
     
@@ -46,28 +46,30 @@ struct MyPageView: View {
     }
     
     // 👁‍🗨 토글 버튼 (아이콘만 표시)
-     private var toggleImagesButton: some View {
-         Button(action: {
-             isHidden.toggle() // 숨기기 상태 토글
-         }) {
-             Image(systemName: isHidden ? "eye.slash" : "eye")
-                 .font(.title2)
-                 .foregroundColor(.blue)
-                 .padding()
-         }
-     }
-    
+    private var toggleImagesButton: some View {
+        withAnimation(.easeInOut(duration: 0.3)) { // 애니메이션 추가
+            Button(action: {
+                isHidden.toggle() // 숨기기 상태 토글
+            }) {
+                Image(systemName: isHidden ? "eye.slash" : "eye")
+                    .font(.title2)
+                    .foregroundColor(.blue)
+                    .padding()
+            }
+        }
+    }
     private var monthAlbumsSection: some View {
         ScrollView {
-            ForEach(albumsByMonth.keys.sorted(), id: \.self) { month in
-                VStack(alignment: .leading) {
-                    titleWithEditButton(for: month)
-
-                    // 👁 hiddenMonths[month]가 true이면 해당 월 숨김
-                    if hiddenMonths[month] != true {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 20) {
-                            albumViews(for: month)
-                            trackViews(for: month)
+            VStack {
+                ForEach(albumsByMonth.keys.sorted(), id: \.self) { month in
+                    VStack(alignment: .leading) {
+                        titleWithEditButton(for: month)
+                        
+                        if hiddenMonths[month] != true {
+                            HStack(spacing: 10) { // LazyVStack 대신 VStack 사용
+                                albumViews(for: month)
+                                trackViews(for: month)
+                            }
                         }
                     }
                 }
@@ -109,7 +111,10 @@ struct MyPageView: View {
                 if hiddenMonths[month] == nil {
                     hiddenMonths[month] = false
                 }
-                hiddenMonths[month]?.toggle()
+                withAnimation(.easeInOut(duration: 0.3)) { // 애니메이션 적용
+                    
+                    hiddenMonths[month]?.toggle()
+                }
             }) {
                 Image(systemName: hiddenMonths[month] == true ? "eye.slash" : "eye")
                     .font(.title2)
@@ -122,9 +127,9 @@ struct MyPageView: View {
     private func albumViews(for month: String) -> some View {
         ForEach(albumsByMonth[month] ?? [], id: \.id) { album in
             albumView(for: album)
+                .id(UUID())  // 각 항목에 고유한 ID를 부여
         }
     }
-
     
     private func albumView(for album: AlbumInfo) -> some View {
         VStack {
@@ -136,30 +141,38 @@ struct MyPageView: View {
                 .lineLimit(1)
         }
         .frame(width: 120)
+        .id(album.uniqueId)  // 고유한 ID 사용
     }
-
     
     private func trackViews(for month: String) -> some View {
         ForEach(tracksByMonth[month] ?? [], id: \.id) { track in
             trackView(for: track)
         }
     }
-
+    
     private func trackView(for track: TrackInfo) -> some View {
         VStack {
             if let imageUrl = track.imageUrl, !imageUrl.isEmpty {
                 loadImage(from: imageUrl)
+                    .frame(width: 100, height: 100) // 고정된 크기
+                    .clipped() // 잘라내기
+                    .padding(.bottom, 5) // 이미지와 텍스트 간격 조정
             } else {
                 Text("이미지 없음")
+                    .frame(width: 100, height: 100) // 고정된 크기
+                    .padding(.bottom, 5) // 텍스트와 간격 조정
             }
             Text(track.name)
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
+                .frame(width: 100) // 텍스트 크기 고정
         }
-        .frame(width: 120)
+        .frame(width: 120) // 전체 너비 고정
+        .padding(.vertical, 10) // 각 항목 간격
     }
+    
     
     private func loadImage(from url: String) -> some View {
         AsyncImage(url: URL(string: url)) { phase in
@@ -167,23 +180,27 @@ struct MyPageView: View {
             case .empty:
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                    .frame(width: 100, height: 100) // 고정된 크기
             case .success(let image):
                 image.resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 100, height: 100)
+                    .frame(width: 100, height: 100) // 고정된 크기
                     .clipped()
                     .cornerRadius(8)
             case .failure:
                 Text("이미지 로드 실패")
                     .foregroundColor(.red)
+                    .frame(width: 100, height: 100) // 고정된 크기
             @unknown default:
                 EmptyView()
             }
         }
+        .frame(width: 100, height: 100) // 고정된 크기
     }
     
     private func fetchDiaryEntries() {
-        guard let url = URL(string: "http://192.168.219.94:8085/api/entries?loginId=\(userId)") else { return }
+        //        guard let url = URL(string: "http://192.168.219.94:8085/api/entries?loginId=\(userId)") else { return }
+        guard let url = URL(string: "http://localhost:8085/api/entries?loginId=\(userId)") else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
@@ -218,8 +235,8 @@ struct MyPageView: View {
     }
     
     private func fetchAlbumInfo(for entryId: Int, albumId: String, createdAt: String) {
-        guard let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)/detail") else { return }
-        
+        //        guard let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)/detail") else { return }
+        guard let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)/detail") else { return }
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {
@@ -238,17 +255,22 @@ struct MyPageView: View {
     private func groupAlbumsByMonth(album: AlbumInfo, createdAt: String) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
         if let date = dateFormatter.date(from: createdAt) {
             let calendar = Calendar.current
             let month = calendar.monthSymbols[calendar.component(.month, from: date) - 1]
             let year = calendar.component(.year, from: date)
             let monthYear = "\(year)년 \(month)"
             
-            if albumsByMonth[monthYear] == nil {
-                albumsByMonth[monthYear] = []
+            DispatchQueue.main.async {
+                var existingAlbums = albumsByMonth[monthYear] ?? []
+                
+                // 이미 추가된 앨범인지 확인 후 추가
+                if !existingAlbums.contains(where: { $0.id == album.id }) {
+                    existingAlbums.append(album)
+                    albumsByMonth[monthYear] = existingAlbums
+                }
             }
-            
-            albumsByMonth[monthYear]?.append(album)
         } else {
             print("createdAt 값 변환 실패: \(createdAt)")
         }
@@ -257,24 +279,31 @@ struct MyPageView: View {
     private func groupTracksByMonth(track: TrackInfo, createdAt: String) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
         if let date = dateFormatter.date(from: createdAt) {
             let calendar = Calendar.current
             let month = calendar.monthSymbols[calendar.component(.month, from: date) - 1]
             let year = calendar.component(.year, from: date)
             let monthYear = "\(year)년 \(month)"
             
-            if tracksByMonth[monthYear] == nil {
-                tracksByMonth[monthYear] = []
+            DispatchQueue.main.async {
+                var existingTracks = tracksByMonth[monthYear] ?? []
+                
+                // 이미 추가된 트랙인지 확인 후 추가
+                if !existingTracks.contains(where: { $0.id == track.id }) {
+                    existingTracks.append(track)
+                    tracksByMonth[monthYear] = existingTracks
+                }
             }
-            
-            tracksByMonth[monthYear]?.append(track)
         } else {
             print("createdAt 값 변환 실패: \(createdAt)")
         }
     }
     
     private func fetchUserInfo() {
-        guard let url = URL(string: "http://192.168.219.94:8085/api/users/\(userId)") else { return }
+        //        guard let url = URL(string: "http://192.168.219.94:8085/api/users/\(userId)") else { return }
+        guard let url = URL(string: "http://localhost:8085/api/users/\(userId)") else { return }
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {
@@ -290,14 +319,16 @@ struct MyPageView: View {
     }
     
     private func fetchTrackInfo(for entryId: Int, trackId: String, createdAt: String) {
-        guard let url = URL(string: "http://192.168.219.94:8085/spotify/track/\(trackId)") else { return }
-
+        //        guard let url = URL(string: "http://192.168.219.94:8085/spotify/track/\(trackId)") else { return }
+        guard let url = URL(string: "http://localhost:8085/spotify/track/\(trackId)") else { return }
+        
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 if let jsonString = String(data: data, encoding: .utf8) {
-                    print("Server Response: \(jsonString)")
+                    //                    print("Server Response: \(jsonString)")
                 }
-
+                
                 do {
                     let decodedData = try JSONDecoder().decode(TrackInfo.self, from: data)
                     DispatchQueue.main.async {
