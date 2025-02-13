@@ -86,7 +86,8 @@ struct CalendarView: View {
 
     private func fetchDiaryEntries() {
         guard let url = URL(string: "http://192.168.219.94:8085/api/entries?loginId=\(userId)") else { return }
-        
+//        guard let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/entries?loginId=\(userId)") else { return }
+
         print("유저아이디는 이거임 ㅋ: \(userId)")
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
@@ -98,7 +99,7 @@ struct CalendarView: View {
 
     private func logResponseData(_ data: Data) {
         if let jsonString = String(data: data, encoding: .utf8) {
-            print("📌 서버 응답 JSON: \(jsonString)")
+//            print("📌 서버 응답 JSON: \(jsonString)")
         }
     }
 
@@ -120,19 +121,38 @@ struct CalendarView: View {
 
     private func fetchAlbumInfo(for entryId: Int, albumId: String) {
         guard let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)/detail") else { return }
+//        guard let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/album/\(albumId)/detail") else { return }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {
                     let decodedData = try JSONDecoder().decode(AlbumInfo.self, from: data)
                     if let jsonString = String(data: data, encoding: .utf8) {
-                        print("📌 Spring 서버 응답 JSON: \(jsonString)")
+//                        print("📌 Spring 서버 응답 JSON: \(jsonString)")
                     }
                     DispatchQueue.main.async {
                         albumData[entryId] = decodedData
                     }
                 } catch {
                     print("Spring 서버 응답 디코딩 오류: \(error)")
+                }
+            }
+        }.resume()
+    }
+    private func fetchTrackInfo(for trackId: String) {
+        guard let url = URL(string: "http://yourapi.com/api/track/\(trackId)") else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                do {
+                    let decodedData = try JSONDecoder().decode(TrackInfo.self, from: data)
+                    DispatchQueue.main.async {
+                        // 트랙 정보를 처리
+                        // 예: 트랙 이미지나 트랙 이름을 UI에 반영
+                        print(decodedData)
+                    }
+                } catch {
+                    print("Track info decoding error: \(error)")
                 }
             }
         }.resume()

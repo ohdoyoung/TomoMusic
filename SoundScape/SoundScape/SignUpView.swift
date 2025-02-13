@@ -80,6 +80,8 @@ struct SignupView: View {
     func signup() {
         // 회원가입 요청 보내기
         let url = URL(string: "http://192.168.219.94:8085/api/signup")!
+//        let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/signup")!
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         

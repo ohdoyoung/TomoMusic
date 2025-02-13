@@ -70,12 +70,15 @@ struct LoginView: View {
     
     func login() {
         // 로그인 요청 보내기
-        let url = URL(string: "http://192.168.219.94:8085/api/login")!
+//        let url = URL(string: "http://192.168.219.94:8085/api/login")!
+          let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/login")!
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         let body = "loginId=\(loginId)&password=\(password)"
         request.httpBody = body.data(using: .utf8)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            print(data)
             if let error = error {
                 DispatchQueue.main.async {
                     self.errorMessage = "로그인 실패: \(error.localizedDescription)"

@@ -97,6 +97,8 @@ struct DiaryView: View {
     
     func saveDiary(userId: String, content: String, emotions: [String], date: String, trackId: String?, albumId: String?) {
         let url = URL(string: "http://192.168.219.94:8085/api/saveDiary")!
+//          let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/saveDiary")!
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -5,7 +5,8 @@ class APIService {
     private init() {}
     
     private static let backendURL = "http://192.168.219.94:8085/music-diary" // 백엔드 API URL
-    
+//      private static let backendURL = "https://slim-dari-ohdoyoung-2098d088.koyeb.app/music-diary" // 백엔드 API URL
+
     // 앨범 목록을 가져오는 함수
     func fetchAlbums(query: String, completion: @escaping (Result<[Album], Error>) -> Void) {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
@@ -15,6 +16,14 @@ class APIService {
             }
             return
         }
+        
+//        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+//              let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/search?query=\(encodedQuery)") else {
+//            DispatchQueue.main.async {
+//                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+//            }
+//            return
+//        }
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -59,6 +68,8 @@ class APIService {
     // 앨범 상세 정보를 가져오는 함수
     static func fetchAlbumDetails(for albumId: String, completion: @escaping (AlbumDetails?) -> Void) {
         let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)")!
+//        let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/album/\(albumId)")!
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
@@ -89,6 +100,8 @@ class APIService {
     // **새로운 함수**: 음악 아이디(trackId)로 앨범 정보 가져오기
     static func fetchAlbumDetailsById(for trackId: String, completion: @escaping (AlbumDetails?) -> Void) {
         let url = URL(string: "http://192.168.219.94:8085/spotify/track/\(trackId)")! // 음악 아이디로 요청 URL 변경
+//          let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/track/\(trackId)")! // 음악 아이디로 요청 URL 변경
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
@@ -124,7 +137,14 @@ class APIService {
             }
             return
         }
-        
+//        
+//        guard let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/api/entries?loginId=\(userId)") else {
+//            DispatchQueue.main.async {
+//                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+//            }
+//            return
+//        }
+//        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
@@ -186,4 +206,40 @@ class APIService {
             completion(.success(albums))
         }
     }
+    
+    static func getTrackDetails(trackId: String, completion: @escaping (TrackInfo?, Error?) -> Void) {
+            let urlString = backendURL + trackId
+            guard let url = URL(string: urlString) else {
+                completion(nil, NSError(domain: "Invalid URL", code: 400, userInfo: nil))
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            
+            // 헤더 설정 (필요한 경우, Authorization 헤더 추가 가능)
+            // request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    completion(nil, error)
+                    return
+                }
+                
+                guard let data = data else {
+                    completion(nil, NSError(domain: "No data received", code: 500, userInfo: nil))
+                    return
+                }
+                
+                do {
+                    // JSON 디코딩
+                    let trackInfo = try JSONDecoder().decode(TrackInfo.self, from: data)
+                    completion(trackInfo, nil)
+                } catch let decodeError {
+                    completion(nil, decodeError)
+                }
+            }
+            
+            task.resume()
+        }
 }

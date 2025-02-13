@@ -14,6 +14,14 @@ class AlbumSearchViewModel: ObservableObject {
             }
             return
         }
+//        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+//              let url = URL(string: "https://slim-dari-ohdoyoung-2098d088.koyeb.app/spotify/search?query=\(encodedQuery)&type=album,track") else {
+//            DispatchQueue.main.async {
+//                self.errorMessage = "잘못된 검색어입니다."
+//            }
+//            return
+//        }
+
 
         isLoading = true
 
