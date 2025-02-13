@@ -85,7 +85,7 @@ struct CalendarView: View {
     }
 
     private func fetchDiaryEntries() {
-        guard let url = URL(string: "http://localhost:8085/api/entries?loginId=\(userId)") else { return }
+        guard let url = URL(string: "http://192.168.219.94:8085/api/entries?loginId=\(userId)") else { return }
         
         print("유저아이디는 이거임 ㅋ: \(userId)")
         URLSession.shared.dataTask(with: url) { data, response, error in
@@ -119,7 +119,7 @@ struct CalendarView: View {
     }
 
     private func fetchAlbumInfo(for entryId: Int, albumId: String) {
-        guard let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)/detail") else { return }
+        guard let url = URL(string: "http://192.168.219.94:8085/spotify/album/\(albumId)/detail") else { return }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
