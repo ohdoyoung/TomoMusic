@@ -35,4 +35,8 @@ public class UserService {
         }
         return false;
     }
+
+    public Optional<UserEntity> getUserByLoginId(String loginId) {
+        return userRepository.findByLoginId(loginId);
+    }
 }

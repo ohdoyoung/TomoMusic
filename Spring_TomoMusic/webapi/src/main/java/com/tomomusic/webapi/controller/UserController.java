@@ -3,6 +3,8 @@ package com.tomomusic.webapi.controller;
 import com.tomomusic.webapi.Service.UserService;
 import com.tomomusic.webapi.entity.UserEntity;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,16 @@ public class UserController {
             return "로그인 성공!";
         } else {
             return "로그인 실패!";
+        }
+    }
+
+    @GetMapping("/users/{loginId}")
+    public ResponseEntity<UserEntity> getUserByLoginId(@PathVariable String loginId) {
+        Optional<UserEntity> user = userService.getUserByLoginId(loginId);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }
