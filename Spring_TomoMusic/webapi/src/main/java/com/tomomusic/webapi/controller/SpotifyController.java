@@ -8,9 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/spotify")
@@ -24,6 +26,7 @@ public class SpotifyController {
 
     private static final String TOKEN_URL = "https://accounts.spotify.com/api/token";
     private static final String API_BASE_URL = "https://api.spotify.com/v1/";
+    private final String SPOTIFY_API_URL = "https://api.spotify.com/v1/recommendations";
 
     // 🎯 앨범 & 트랙 검색 API
     @GetMapping("/search")
@@ -89,16 +92,6 @@ public class SpotifyController {
         }
     }
 
-    // @GetMapping("/album/{id}")
-    // public ResponseEntity<Map<String, Object>> getAlbumInfo(@PathVariable String
-    // id) {
-    // // Step 1: Access Token 가져오기
-    // String accessToken = getAccessToken();
-
-    // // Step 2: 앨범 상세 정보 가져오기
-    // System.out.println(fetchAlbumDetails(id, accessToken));
-    // return ResponseEntity.ok(fetchAlbumDetails(id, accessToken));
-    // }
     @GetMapping("/album/{id}")
     public ResponseEntity<String> getAlbumInfo(@PathVariable String id) {
         // Step 1: Get Access Token
@@ -106,7 +99,7 @@ public class SpotifyController {
 
         // Step 2: Fetch Album Info using the access token
         String albumInfo = fetchAlbumInfo(id, accessToken);
-        System.out.println(albumInfo);
+        // System.out.println(albumInfo);
         return ResponseEntity.ok(albumInfo);
     }
 
@@ -193,7 +186,7 @@ public class SpotifyController {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonResponse = objectMapper.readTree(responseBody);
-            // System.out.println(jsonResponse);
+            System.out.println(jsonResponse);
 
             // 트랙 응답에서 앨범 정보 추출
             JsonNode albumNode = jsonResponse.get("album");
@@ -282,5 +275,94 @@ public class SpotifyController {
         } catch (Exception e) {
             throw new RuntimeException("Error parsing detailed album response", e);
         }
+    }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<?> getRecommendations(@RequestParam String[] emotions) {
+        // 감정 배열에 대해 장르 매핑을 적용
+        List<String> genres = Arrays.stream(emotions)
+                .map(this::mapEmotionToGenre)
+                .collect(Collectors.toList());
+
+        // Spotify Access Token 가져오기
+        String accessToken = getAccessToken(); // 액세스 토큰
+
+        // Spotify 추천 URL 생성
+        String url = buildRecommendationUrl(genres, accessToken);
+
+        // 액세스 토큰을 포함하여 추천 API 호출
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken); // Authorization 헤더에 액세스 토큰 추가
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        String response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
+
+        return ResponseEntity.ok(response); // Spotify에서 받은 추천 결과 반환
+    }
+
+    // 감정에 따라 장르를 매핑하는 메서드
+    private String mapEmotionToGenre(String emotion) {
+        switch (emotion) {
+            case "🙂":
+                return "pop"; // 행복한 감정 -> 팝
+            case "😊":
+                return "chill"; // 차분한 감정 -> 차분한 음악
+            case "😎":
+                return "rock"; // 멋진 감정 -> 록
+            case "😢":
+                return "sad"; // 슬픈 감정 -> 슬픈 음악
+            case "😜":
+                return "indie"; // 장난스러운 감정 -> 인디
+            case "🥳":
+                return "party"; // 파티 감정 -> 파티 음악
+            case "🤩":
+                return "electronic"; // 환호하는 감정 -> 전자 음악
+            case "😇":
+                return "classical"; // 천사 같은 감정 -> 클래식
+            case "🤔":
+                return "alternative"; // 생각하는 감정 -> 얼터너티브
+            case "🤯":
+                return "experimental"; // 충격적인 감정 -> 실험적인 음악
+            case "😈":
+                return "metal"; // 악마적인 감정 -> 메탈
+            case "😱":
+                return "horror"; // 무서운 감정 -> 호러 음악
+            case "😷":
+                return "lofi"; // 아픈 감정 -> 로파이
+            case "😳":
+                return "rb"; // 당황한 감정 -> R&B
+            case "🥺":
+                return "acoustic"; // 애절한 감정 -> 어쿠스틱
+            case "😴":
+                return "ambient"; // 피곤한 감정 -> 앰비언트
+            case "💪":
+                return "workout"; // 운동하는 감정 -> 운동 음악
+            case "❤️":
+                return "romantic"; // 사랑하는 감정 -> 로맨틱 음악
+            case "🔥":
+                return "trap"; // 뜨거운 감정 -> 트랩 음악
+            case "😂":
+                return "comedy"; // 웃긴 감정 -> 코미디
+            case "😭":
+                return "sad"; // 슬픈 감정 -> 슬픈 음악
+            case "🥶":
+                return "chill"; // 추운 감정 -> 차분한 음악
+            case "🤪":
+                return "party"; // 미친 감정 -> 파티 음악
+            case "😡":
+                return "angry"; // 화난 감정 -> 화난 음악
+            case "💀":
+                return "deathmetal"; // 죽음과 관련된 감정 -> 데스메탈
+            default:
+                return "pop"; // 기본적으로 팝 음악
+        }
+    }
+
+    // Spotify 추천 API URL 빌드 (장르 목록을 사용)
+    private String buildRecommendationUrl(List<String> genres, String accessToken) {
+        String genreParam = String.join(",", genres); // 장르 목록을 쉼표로 연결
+        return "https://api.spotify.com/v1/recommendations?seed_genres=" + genreParam +
+                "&limit=2"; // 최대 2곡 추천
     }
 }

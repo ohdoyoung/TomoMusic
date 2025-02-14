@@ -54,6 +54,7 @@ struct CalendarView: View {
                                 .lineLimit(3)
                             
                             if let emotions = entry.emotions, !emotions.isEmpty {
+                                
                                 HStack(spacing: 8) {
                                     ForEach(emotions, id: \.self) { emotion in
                                         Text(emotion)
@@ -124,7 +125,7 @@ struct CalendarView: View {
     
     private func fetchDiaryEntries() {
 //        guard let url = URL(string: "http://localhost:8085/api/entries?loginId=\(userId)") else { return }
-                guard let url = URL(string: "http://192.168.219.151:8085/api/entries?loginId=\(userId)") else { return }
+          guard let url = URL(string: "http://192.168.219.151:8085/api/entries?loginId=\(userId)") else { return }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
@@ -151,20 +152,20 @@ struct CalendarView: View {
             print("디코딩 오류: \(error)")
         }
     }
-    
-    private func fetchAlbumInfo(for entryId: Int, albumId: String) {
-//        guard let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)/detail") else { return }
-            guard let url = URL(string: " http://192.168.219.151:8085/spotify/album/\(albumId)/detail") else { return }
 
+    private func fetchAlbumInfo(for entryId: Int, albumId: String) {
+        guard let url = URL(string: "http://192.168.219.151:8085/spotify/album/\(albumId)/detail") else { return }
+//        guard let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)/detail") else { return }
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {
                     let decodedData = try JSONDecoder().decode(AlbumInfo.self, from: data)
                     DispatchQueue.main.async {
                         albumData[entryId] = decodedData
+//                        groupAlbumsByMonth(album: decodedData, createdAt: createdAt)
                     }
                 } catch {
-                    print("디코딩 오류: \(error)")
+                    print("Spring 서버 응답 디코딩 오류: \(error)")
                 }
             }
         }.resume()
@@ -187,4 +188,5 @@ struct CalendarView: View {
             }
         }.resume()
     }
+
 }

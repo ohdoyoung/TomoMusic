@@ -42,6 +42,9 @@ struct AlbumSearchView: View {
             .background(Color.white)
             .cornerRadius(8)
             .shadow(radius: 5)
+            .onTapGesture {
+                UIApplication.shared.endEditing()
+            }
         }
         .padding(.horizontal)
         .padding(.top, 20)

@@ -19,6 +19,18 @@ struct DiaryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // 감정 선택 버튼
+                    // 커스텀 TextEditor (키보드 닫기 버튼 포함)
+                    CustomTextEditor(text: $musicCalText)
+                        .frame(height: 200)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                        .padding()
+                        .focused($isTextEditorFocused)
+                        .onTapGesture {
+                            UIApplication.shared.endEditing()
+                        }
                     ScrollView(.vertical, showsIndicators: false) {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
                             ForEach(emotions.prefix(maxVisibleRows * 5), id: \.self) { emotion in
@@ -31,15 +43,6 @@ struct DiaryView: View {
                     .clipped()
 
 
-                    // 커스텀 TextEditor (키보드 닫기 버튼 포함)
-                    CustomTextEditor(text: $musicCalText)
-                        .frame(height: 200)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                        .padding()
-                        .focused($isTextEditorFocused)
                 }
                 .padding(.bottom, keyboardHeight) // ✅ 키보드 높이에 맞춰 아래 여백 추가
             }
@@ -70,7 +73,7 @@ struct DiaryView: View {
                 removeKeyboardObserver() // ✅ 키보드 감지 해제
             }
             .onTapGesture {
-                hideKeyboard() // ✅ 화면을 탭하면 키보드 숨김
+                UIApplication.shared.endEditing()
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom) // ✅ 키보드가 올라와도 화면 하단에 가림
