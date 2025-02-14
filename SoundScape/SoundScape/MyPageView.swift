@@ -12,16 +12,17 @@ struct MyPageView: View {
     @State private var isHidden: Bool = false // 이미지 숨기기 상태
     @State private var hiddenMonths: [String: Bool] = [:] // 월별 숨김 여부 관리
     
-    
     let userId = UserInfo.shared.loginId
     
     var body: some View {
         VStack {
             greetingMessage
+                .padding(.bottom, 20)
             
             monthAlbumsSection
         }
         .padding()
+        .background(Color.white) // 배경 색상 설정 (밝은 배경)
         .onAppear {
             fetchUserInfo()
             fetchDiaryEntries()
@@ -35,7 +36,7 @@ struct MyPageView: View {
                     Text("반가워요, \(nickname)님! 🌟")
                         .font(.title3)
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.primary) // 텍스트 색상
                         .padding(.top, 10)
                         .transition(.opacity)
                     Spacer()
@@ -45,9 +46,9 @@ struct MyPageView: View {
         }
     }
     
-    // 👁‍🗨 토글 버튼 (아이콘만 표시)
+    // 👁‍🗨 이미지 숨기기 토글 버튼
     private var toggleImagesButton: some View {
-        withAnimation(.easeInOut(duration: 0.3)) { // 애니메이션 추가
+        withAnimation(.easeInOut(duration: 0.3)) {
             Button(action: {
                 isHidden.toggle() // 숨기기 상태 토글
             }) {
@@ -58,6 +59,7 @@ struct MyPageView: View {
             }
         }
     }
+    
     private var monthAlbumsSection: some View {
         ScrollView {
             VStack {
@@ -66,7 +68,7 @@ struct MyPageView: View {
                         titleWithEditButton(for: month)
                         
                         if hiddenMonths[month] != true {
-                            HStack(spacing: 10) { // LazyVStack 대신 VStack 사용
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                                 albumViews(for: month)
                                 trackViews(for: month)
                             }
@@ -76,8 +78,9 @@ struct MyPageView: View {
             }
         }
     }
+    
     private func titleWithEditButton(for month: String) -> some View {
-        HStack(alignment: .center) {
+        HStack {
             if isEditingTitle[month] == true {
                 TextField("월별 제목", text: Binding(
                     get: { customMonthTitles[month] ?? "\(month) Sound" },
@@ -88,60 +91,61 @@ struct MyPageView: View {
             } else {
                 Text(customMonthTitles[month] ?? "\(month) Sound")
                     .font(.headline)
-                    .padding(.top)
+                    .padding(.top, 5)
             }
             
             Spacer()
             
-            // ✏️ 수정 버튼
-            Button(action: {
-                if isEditingTitle[month] == nil {
-                    isEditingTitle[month] = false
+            HStack(spacing: 10) {  // 버튼들을 정렬
+                Button(action: {
+                    if isEditingTitle[month] == nil {
+                        isEditingTitle[month] = false
+                    }
+                    isEditingTitle[month]?.toggle()
+                }) {
+                    Image(systemName: isEditingTitle[month] == true ? "checkmark.circle.fill" : "pencil.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.blue)
                 }
-                isEditingTitle[month]?.toggle()
-            }) {
-                Image(systemName: isEditingTitle[month] == true ? "checkmark.circle.fill" : "pencil.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(.blue)
-                    .padding(.top, 5)
-            }
-            
-            // 👁 숨기기 버튼 (앨범 & 트랙 숨기기)
-            Button(action: {
-                if hiddenMonths[month] == nil {
-                    hiddenMonths[month] = false
+                
+                Button(action: {
+                    if hiddenMonths[month] == nil {
+                        hiddenMonths[month] = false
+                    }
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        hiddenMonths[month]?.toggle()
+                    }
+                }) {
+                    Image(systemName: hiddenMonths[month] == true ? "eye.slash" : "eye")
+                        .font(.title2)
+                        .foregroundColor(.blue)
                 }
-                withAnimation(.easeInOut(duration: 0.3)) { // 애니메이션 적용
-                    
-                    hiddenMonths[month]?.toggle()
-                }
-            }) {
-                Image(systemName: hiddenMonths[month] == true ? "eye.slash" : "eye")
-                    .font(.title2)
-                    .foregroundColor(.blue)
-                    .padding(.top, 5)
             }
         }
+        .padding(.vertical, 5)  // 위아래 패딩 추가
     }
     
     private func albumViews(for month: String) -> some View {
         ForEach(albumsByMonth[month] ?? [], id: \.id) { album in
             albumView(for: album)
-                .id(UUID())  // 각 항목에 고유한 ID를 부여
+                .id(UUID())  // 고유한 ID
         }
     }
-    
+
     private func albumView(for album: AlbumInfo) -> some View {
         VStack {
             loadImage(from: album.imageUrl ?? "")
             Text(album.name)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.secondary) // 색상 개선
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
         }
         .frame(width: 120)
-        .id(album.uniqueId)  // 고유한 ID 사용
+        .padding(.bottom, 5) // 카드 사이 간격
+        .background(Color.white) // 카드 배경
+        .cornerRadius(12) // 둥근 모서리
+//        .shadow(radius: 5) // 그림자 추가
     }
     
     private func trackViews(for month: String) -> some View {
@@ -149,18 +153,17 @@ struct MyPageView: View {
             trackView(for: track)
         }
     }
-    
     private func trackView(for track: TrackInfo) -> some View {
         VStack {
             if let imageUrl = track.imageUrl, !imageUrl.isEmpty {
                 loadImage(from: imageUrl)
-                    .frame(width: 100, height: 100) // 고정된 크기
-                    .clipped() // 잘라내기
-                    .padding(.bottom, 5) // 이미지와 텍스트 간격 조정
+                    .frame(width: 80, height: 80) // 이미지 크기 고정
+                    .padding(.top, 8) // 위쪽에 여백 추가
+                    .clipped() // 이미지가 프레임을 넘치지 않게 자르기
             } else {
                 Text("이미지 없음")
-                    .frame(width: 100, height: 100) // 고정된 크기
-                    .padding(.bottom, 5) // 텍스트와 간격 조정
+                    .frame(width: 80, height: 80) // 이미지 크기 고정
+                    .padding(.bottom, 5)
             }
             Text(track.name)
                 .font(.caption)
@@ -170,32 +173,35 @@ struct MyPageView: View {
                 .frame(width: 100) // 텍스트 크기 고정
         }
         .frame(width: 120) // 전체 너비 고정
-        .padding(.vertical, 10) // 각 항목 간격
+        .padding(.bottom, 5)
+        .background(Color.white) // 카드 배경
+        .cornerRadius(12) // 둥근 모서리
+//        .shadow(radius: 5) // 그림자 추가
     }
-    
-    
+
     private func loadImage(from url: String) -> some View {
         AsyncImage(url: URL(string: url)) { phase in
             switch phase {
             case .empty:
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-                    .frame(width: 100, height: 100) // 고정된 크기
+                    .frame(width: 80, height: 80)
+                    .padding(.top,8)
+                    .clipped()
             case .success(let image):
                 image.resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 100, height: 100) // 고정된 크기
-                    .clipped()
-                    .cornerRadius(8)
+                    .aspectRatio(contentMode: .fill) // 이미지 비율을 유지하면서 프레임에 맞게 조정
+                    .frame(width: 80, height: 80) // 프레임 크기
+                    .clipped() // 프레임을 넘지 않도록 자르기
+                    .cornerRadius(8) // 둥근 모서리
             case .failure:
                 Text("이미지 로드 실패")
                     .foregroundColor(.red)
-                    .frame(width: 100, height: 100) // 고정된 크기
+                    .frame(width: 80, height: 80)
             @unknown default:
                 EmptyView()
             }
         }
-        .frame(width: 100, height: 100) // 고정된 크기
     }
     
     private func fetchDiaryEntries() {
@@ -325,10 +331,10 @@ struct MyPageView: View {
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    //                    print("Server Response: \(jsonString)")
-                }
-                
+//                if let jsonString = String(data: data, encoding: .utf8) {
+//                                        print("Server Response: \(jsonString)")
+//                }
+//                
                 do {
                     let decodedData = try JSONDecoder().decode(TrackInfo.self, from: data)
                     DispatchQueue.main.async {

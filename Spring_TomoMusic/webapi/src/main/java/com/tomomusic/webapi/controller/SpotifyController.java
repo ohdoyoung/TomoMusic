@@ -193,13 +193,14 @@ public class SpotifyController {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonResponse = objectMapper.readTree(responseBody);
+            // System.out.println(jsonResponse);
 
             // 트랙 응답에서 앨범 정보 추출
             JsonNode albumNode = jsonResponse.get("album");
 
             Map<String, Object> albumInfo = new HashMap<>();
             albumInfo.put("id", albumNode.get("id").asText());
-            albumInfo.put("name", albumNode.get("name").asText());
+            albumInfo.put("name", jsonResponse.get("name").asText());
             // albumInfo.put("release_date", albumNode.get("release_date").asText());
             albumInfo.put("images", albumNode.get("images"));
             albumInfo.put("artists", albumNode.get("artists"));

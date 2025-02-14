@@ -26,14 +26,21 @@ public class UserService {
     }
 
     // 로그인 검증
-    public boolean login(String loginId, String rawPassword) {
-        // loginId로 사용자 조회
-        UserEntity user = userRepository.findByLoginId(loginId).orElse(null);
-        if (user != null) {
-            // 비밀번호 평문 비교
-            return rawPassword.equals(user.getPassword());
+    // 로그인 처리 로직 예시
+    public boolean login(String loginId, String password) {
+        Optional<UserEntity> user = userRepository.findByLoginId(loginId);
+
+        if (user.isPresent()) {
+            UserEntity userEntity = user.get();
+
+            // 비밀번호가 평문이라면, userEntity.getPassword()와 직접 비교
+            if (userEntity.getPassword().equals(password)) {
+                return true; // 비밀번호 일치
+            }
+
         }
-        return false;
+
+        return false; // 로그인 실패
     }
 
     public Optional<UserEntity> getUserByLoginId(String loginId) {
