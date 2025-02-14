@@ -277,92 +277,61 @@ public class SpotifyController {
         }
     }
 
-    @GetMapping("/recommend")
-    public ResponseEntity<?> getRecommendations(@RequestParam String[] emotions) {
-        // 감정 배열에 대해 장르 매핑을 적용
-        List<String> genres = Arrays.stream(emotions)
-                .map(this::mapEmotionToGenre)
-                .collect(Collectors.toList());
+    @GetMapping("/searchByEmotion")
+    public ResponseEntity<Map<String, Object>> searchByEmotion(@RequestParam String[] emotions) {
+        String accessToken = getAccessToken();
+        return ResponseEntity.ok(fetchTracksByEmotion(emotions, accessToken));
+    }
 
-        // Spotify Access Token 가져오기
-        String accessToken = getAccessToken(); // 액세스 토큰
+    // ✅ 감정에 맞는 트랙을 검색하는 메서드
+    private Map<String, Object> fetchTracksByEmotion(String[] emotions, String accessToken) {
+        // 감정에 맞는 트랙을 검색하는 쿼리 문자열 구성
+        String[] query = convertEmotionsToQueries(emotions);
+        String url = API_BASE_URL + "search?q=" + String.join(",", query) + "&type=track&limit=2"; // 최대 2개의 트랙 추천
 
-        // Spotify 추천 URL 생성
-        String url = buildRecommendationUrl(genres, accessToken);
-
-        // 액세스 토큰을 포함하여 추천 API 호출
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken); // Authorization 헤더에 액세스 토큰 추가
+        headers.set("Authorization", "Bearer " + accessToken);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        String response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
-        return ResponseEntity.ok(response); // Spotify에서 받은 추천 결과 반환
+        return parseSpotifyResponse(response.getBody());
     }
 
-    // 감정에 따라 장르를 매핑하는 메서드
-    private String mapEmotionToGenre(String emotion) {
-        switch (emotion) {
-            case "🙂":
-                return "pop"; // 행복한 감정 -> 팝
-            case "😊":
-                return "chill"; // 차분한 감정 -> 차분한 음악
-            case "😎":
-                return "rock"; // 멋진 감정 -> 록
-            case "😢":
-                return "sad"; // 슬픈 감정 -> 슬픈 음악
-            case "😜":
-                return "indie"; // 장난스러운 감정 -> 인디
-            case "🥳":
-                return "party"; // 파티 감정 -> 파티 음악
-            case "🤩":
-                return "electronic"; // 환호하는 감정 -> 전자 음악
-            case "😇":
-                return "classical"; // 천사 같은 감정 -> 클래식
-            case "🤔":
-                return "alternative"; // 생각하는 감정 -> 얼터너티브
-            case "🤯":
-                return "experimental"; // 충격적인 감정 -> 실험적인 음악
-            case "😈":
-                return "metal"; // 악마적인 감정 -> 메탈
-            case "😱":
-                return "horror"; // 무서운 감정 -> 호러 음악
-            case "😷":
-                return "lofi"; // 아픈 감정 -> 로파이
-            case "😳":
-                return "rb"; // 당황한 감정 -> R&B
-            case "🥺":
-                return "acoustic"; // 애절한 감정 -> 어쿠스틱
-            case "😴":
-                return "ambient"; // 피곤한 감정 -> 앰비언트
-            case "💪":
-                return "workout"; // 운동하는 감정 -> 운동 음악
-            case "❤️":
-                return "romantic"; // 사랑하는 감정 -> 로맨틱 음악
-            case "🔥":
-                return "trap"; // 뜨거운 감정 -> 트랩 음악
-            case "😂":
-                return "comedy"; // 웃긴 감정 -> 코미디
-            case "😭":
-                return "sad"; // 슬픈 감정 -> 슬픈 음악
-            case "🥶":
-                return "chill"; // 추운 감정 -> 차분한 음악
-            case "🤪":
-                return "party"; // 미친 감정 -> 파티 음악
-            case "😡":
-                return "angry"; // 화난 감정 -> 화난 음악
-            case "💀":
-                return "deathmetal"; // 죽음과 관련된 감정 -> 데스메탈
-            default:
-                return "pop"; // 기본적으로 팝 음악
-        }
+    // 감정 이모지를 텍스트로 변환하는 메서드
+    private String[] convertEmotionsToQueries(String[] emotions) {
+        Map<String, String> emotionMapping = new HashMap<>();
+        emotionMapping.put("🙂", "neutral");
+        emotionMapping.put("😊", "happy");
+        emotionMapping.put("😎", "chill");
+        emotionMapping.put("😢", "sad");
+        emotionMapping.put("😜", "playful");
+        emotionMapping.put("🥳", "celebration");
+        emotionMapping.put("🤩", "excited");
+        emotionMapping.put("😇", "innocent");
+        emotionMapping.put("🤔", "thoughtful");
+        emotionMapping.put("🤯", "mindblown");
+        emotionMapping.put("😈", "mischievous");
+        emotionMapping.put("😱", "scared");
+        emotionMapping.put("😷", "sick");
+        emotionMapping.put("😳", "embarrassed");
+        emotionMapping.put("🥺", "pleading");
+        emotionMapping.put("😴", "sleepy");
+        emotionMapping.put("💪", "strong");
+        emotionMapping.put("❤️", "love");
+        emotionMapping.put("🔥", "passionate");
+        emotionMapping.put("😂", "laughing");
+        emotionMapping.put("😭", "crying");
+        emotionMapping.put("🥶", "cold");
+        emotionMapping.put("🤪", "silly");
+        emotionMapping.put("😡", "angry");
+        emotionMapping.put("💀", "dead");
+
+        // 감정 이모지를 해당하는 텍스트로 변환
+        return Arrays.stream(emotions)
+                .map(emotion -> emotionMapping.getOrDefault(emotion, "mood"))
+                .toArray(String[]::new);
     }
 
-    // Spotify 추천 API URL 빌드 (장르 목록을 사용)
-    private String buildRecommendationUrl(List<String> genres, String accessToken) {
-        String genreParam = String.join(",", genres); // 장르 목록을 쉼표로 연결
-        return "https://api.spotify.com/v1/recommendations?seed_genres=" + genreParam +
-                "&limit=2"; // 최대 2곡 추천
-    }
 }

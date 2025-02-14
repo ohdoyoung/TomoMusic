@@ -6,6 +6,7 @@ struct DiaryView: View {
     @State private var diaryBackground: Color = Color.blue.opacity(0.1) // 일기 배경 색상
     @FocusState private var isTextEditorFocused: Bool // ✅ 포커스 상태 추가
     @State private var keyboardHeight: CGFloat = 0 // ✅ 키보드 높이 저장
+    @Environment(\.presentationMode) var presentationMode // ✅ 이전 화면으로 이동을 위한 변수 추가
 
     let maxVisibleRows = 5
     let emotions = ["🙂", "😊", "😎", "😢", "😜", "🥳", "🤩", "😇", "🤔", "🤯",
@@ -41,8 +42,6 @@ struct DiaryView: View {
                     }
                     .frame(height: CGFloat(maxVisibleRows) * 18)
                     .clipped()
-
-
                 }
                 .padding(.bottom, keyboardHeight) // ✅ 키보드 높이에 맞춰 아래 여백 추가
             }
@@ -56,6 +55,8 @@ struct DiaryView: View {
                 let userId = UserInfo.shared.loginId
                 let emotionsJson = Array(selectedEmotions)
                 saveDiary(userId: userId, content: musicCalText, emotions: emotionsJson, date: todayString, trackId: trackId, albumId: albumId)
+                
+                presentationMode.wrappedValue.dismiss() // ✅ 버튼 클릭 시 이전 화면으로 이동
             }) {
                 Text("Scape")
                     .font(.headline)
@@ -66,12 +67,12 @@ struct DiaryView: View {
                     .cornerRadius(12)
             }
             .padding()
-            .onAppear {
-                observeKeyboard() // ✅ 키보드 감지 시작
-            }
-            .onDisappear {
-                removeKeyboardObserver() // ✅ 키보드 감지 해제
-            }
+//            .onAppear {
+//                observeKeyboard() // ✅ 키보드 감지 시작
+//            }
+//            .onDisappear {
+//                removeKeyboardObserver() // ✅ 키보드 감지 해제
+//            }
             .onTapGesture {
                 UIApplication.shared.endEditing()
             }
@@ -98,7 +99,8 @@ struct DiaryView: View {
     }
 
     func saveDiary(userId: String, content: String, emotions: [String], date: String, trackId: String?, albumId: String?) {
-        let url = URL(string: "http://192.168.219.151:8085/api/saveDiary")!
+//        let url = URL(string: "http://192.168.219.151:8085/api/saveDiary")!
+                let url = URL(string: "http://localhost:8085/api/saveDiary")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -139,35 +141,5 @@ struct DiaryView: View {
             }
         }
         task.resume()
-    }
-
-    // 키보드 감지 함수
-    private func observeKeyboard() {
-        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
-            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                withAnimation {
-                    self.keyboardHeight = keyboardFrame.height - 50 // ✅ 살짝 여유 공간 추가
-                }
-            }
-        }
-
-        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
-            withAnimation {
-                self.keyboardHeight = 0
-            }
-        }
-    }
-
-    // 키보드 감지 해제
-    private func removeKeyboardObserver() {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
-}
-
-/// 키보드 숨기기 기능
-extension View {
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

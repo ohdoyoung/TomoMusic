@@ -7,20 +7,20 @@ class AlbumSearchViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
 
     func search(query: String) {
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "http://192.168.219.151:8085/spotify/search?query=\(encodedQuery)&type=album,track") else {
-            DispatchQueue.main.async {
-                self.errorMessage = "잘못된 검색어입니다."
-            }
-            return
-        }
 //        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-//              let url = URL(string: "http://localhost:8085/spotify/search?query=\(encodedQuery)&type=album,track") else {
+//              let url = URL(string: "http://192.168.219.151:8085/spotify/search?query=\(encodedQuery)&type=album,track") else {
 //            DispatchQueue.main.async {
 //                self.errorMessage = "잘못된 검색어입니다."
 //            }
 //            return
 //        }
+        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "http://localhost:8085/spotify/search?query=\(encodedQuery)&type=album,track") else {
+            DispatchQueue.main.async {
+                self.errorMessage = "잘못된 검색어입니다."
+            }
+            return
+        }
 
 
         isLoading = true
