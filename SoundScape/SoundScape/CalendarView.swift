@@ -123,8 +123,9 @@ struct CalendarView: View {
     }
     
     private func fetchDiaryEntries() {
-        guard let url = URL(string: "http://localhost:8085/api/entries?loginId=\(userId)") else { return }
-        
+//        guard let url = URL(string: "http://localhost:8085/api/entries?loginId=\(userId)") else { return }
+                guard let url = URL(string: "http://192.168.219.151:8085/api/entries?loginId=\(userId)") else { return }
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 parseDiaryEntries(data)
@@ -152,8 +153,9 @@ struct CalendarView: View {
     }
     
     private func fetchAlbumInfo(for entryId: Int, albumId: String) {
-        guard let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)/detail") else { return }
-        
+//        guard let url = URL(string: "http://localhost:8085/spotify/album/\(albumId)/detail") else { return }
+            guard let url = URL(string: " http://192.168.219.151:8085/spotify/album/\(albumId)/detail") else { return }
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {
@@ -169,8 +171,9 @@ struct CalendarView: View {
     }
     
     private func fetchTrackInfo(for entryId: Int, trackId: String) {
-        guard let url = URL(string: "http://localhost:8085/spotify/track/\(trackId)") else { return }
-        
+//        guard let url = URL(string: "http://localhost:8085/spotify/track/\(trackId)") else { return }
+        guard let url = URL(string: "http://192.168.219.151:8085/spotify/track/\(trackId)") else { return }
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {

@@ -1,41 +1,37 @@
-// TabbarView.swift
 import SwiftUI
 
 struct TabbarView: View {
-    enum Tab {  // Tag에서 사용할 Tab 열겨형
+    enum Tab {
         case a, b, c
     }
     
-    @State private var selected: Tab = .c  // 선택된 Tab을 컨트롤할 수 있는 상태 변수
-    @State private var selectedDate: Date = Date()  // 캘린더에 전달할 날짜 상태 변수
-    @State private var diaryEntries: [MusicDiaryEntry] = []  // diaryEntries를 관리
+    @State private var selected: Tab = .c
+    @State private var selectedDate: Date = Date()
+    @State private var diaryEntries: [MusicDiaryEntry] = []
     
     var body: some View {
-        VStack {
-            // TabView 부분
+        ZStack(alignment: .bottom) { // ✅ 탭 바를 항상 아래에 고정
             TabView(selection: $selected) {
-                Group {
-                    NavigationStack {
-                        AlbumSearchView() // 앨범 검색 뷰
-                    }
-                    .tag(Tab.a)
-                
-                    NavigationStack {
-                        CalendarView()  // @Binding을 사용하여 자식 뷰에 전달
-                    }
-                    .tag(Tab.b)
-                    
-                    NavigationStack {
-                        MyPageView()  // 다른 탭 뷰
-                    }
-                    .tag(Tab.c)
+                NavigationStack {
+                    AlbumSearchView()
                 }
-                .toolbar(.hidden, for: .tabBar)
+                .tag(Tab.a)
+                
+                NavigationStack {
+                    CalendarView()
+                }
+                .tag(Tab.b)
+                
+                NavigationStack {
+                    MyPageView()
+                }
+                .tag(Tab.c)
             }
-
-            // 커스텀 탭바
+            
+            // ✅ 탭 바를 최하단에 고정
             tabBar
         }
+        .ignoresSafeArea(edges: .bottom) // ✅ 아이폰 하단 부분까지 확장
     }
     
     var tabBar: some View {
@@ -45,12 +41,10 @@ struct TabbarView: View {
             Button {
                 selected = .a
             } label: {
-                VStack(alignment: .center) {
-                    Image(systemName: "magnifyingglass")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22)
-                }
+                Image(systemName: "magnifyingglass")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22)
             }
             .foregroundStyle(selected == .a ? Color.accentColor : Color.primary)
             
@@ -59,12 +53,10 @@ struct TabbarView: View {
             Button {
                 selected = .b
             } label: {
-                VStack(alignment: .center) {
-                    Image(systemName: "calendar")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22)
-                }
+                Image(systemName: "calendar")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22)
             }
             .foregroundStyle(selected == .b ? Color.accentColor : Color.primary)
             
@@ -73,12 +65,10 @@ struct TabbarView: View {
             Button {
                 selected = .c
             } label: {
-                VStack(alignment: .center) {
-                    Image(systemName: "house.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22)
-                }
+                Image(systemName: "house.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22)
             }
             .foregroundStyle(selected == .c ? Color.accentColor : Color.primary)
             
@@ -92,5 +82,6 @@ struct TabbarView: View {
                 .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
         }
         .padding(.horizontal)
+        .ignoresSafeArea(.keyboard, edges: .bottom) // ✅ 키보드가 올라와도 탭 바를 숨기지 않음
     }
 }
