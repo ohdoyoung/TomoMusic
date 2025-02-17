@@ -27,3 +27,8 @@ Soundscape는 음악과 감정을 기록하는 iOS 앱입니다. 사용자는 �
 	•	API: Spotify API
 	•	인증: JWT 기반 사용자 인증
 	•	디자인: Apple Music 스타일의 미니멀 UI
+
+#### 스크린샷
+![image.png](attachment:e2cbbf3b-e209-4433-ab1a-460390816d2e:image.png)
+![image.png](attachment:8d068180-2f35-46a4-9095-2401b1f0b361:image.png)
+![image.png](attachment:a7395c56-d438-410f-add3-9ad0a728d99b:image.png)
