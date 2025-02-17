@@ -82,8 +82,8 @@ struct SignupView: View {
         }
     }
     func signup() {
-//        let url = URL(string: "http://localhost:8085/api/signup")!
-        let url = URL(string: "http://192.168.219.151:8085/api/signup")!
+        let url = URL(string: "http://localhost:8085/api/signup")!
+//        let url = URL(string: "http://192.168.219.151:8085/api/signup")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

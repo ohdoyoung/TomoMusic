@@ -7,3 +7,4 @@
 
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
+backendURL = "https://localhost:8085" // 백엔드 API URL
