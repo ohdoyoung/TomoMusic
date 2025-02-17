@@ -29,6 +29,6 @@ Soundscape는 음악과 감정을 기록하는 iOS 앱입니다. 사용자는 �
 	•	디자인: Apple Music 스타일의 미니멀 UI
 
 #### 스크린샷
-![image.png](attachment:e2cbbf3b-e209-4433-ab1a-460390816d2e:image.png)
-![image.png](attachment:8d068180-2f35-46a4-9095-2401b1f0b361:image.png)
-![image.png](attachment:a7395c56-d438-410f-add3-9ad0a728d99b:image.png)
+<img src = "https://github.com/user-attachments/assets/61ca8a5a-9090-4cef-8334-e1901baf80f2" width = 400">
+<img src = "https://github.com/user-attachments/assets/40cb5f10-48d2-43bd-89f7-aaa919df36b5" width = 400">
+<img src = "https://github.com/user-attachments/assets/c033f5f1-39a2-4b97-8f95-9677fb8aabd8" width = 400">
